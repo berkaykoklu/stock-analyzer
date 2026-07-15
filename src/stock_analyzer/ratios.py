@@ -106,6 +106,8 @@ def piotroski_score(
     if current_current_ratio is not None and previous_current_ratio is not None:
         checks["current_ratio_increased"] = current_current_ratio > previous_current_ratio
 
+    # Deviation from legacy: compares Share Issued across periods;
+    # legacy only checked sharesOutstanding presence, not a dilution signal.
     current_shares = _line(balance_sheet, "Share Issued", 0)
     previous_shares = _line(balance_sheet, "Share Issued", 1)
     if current_shares is not None and previous_shares is not None:

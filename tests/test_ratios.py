@@ -40,6 +40,14 @@ def test_debt_ratio_falls_back_to_long_term_debt():
     assert debt_ratio(bs) == pytest.approx(400.0 / 2000.0)
 
 
+def test_debt_ratio_zero_total_debt_does_not_fall_back():
+    bs = pd.DataFrame(
+        {"2025": [2000.0, 0.0, 400.0]},
+        index=["Total Assets", "Total Debt", "Long Term Debt"],
+    )
+    assert debt_ratio(bs) == pytest.approx(0.0)
+
+
 def test_current_ratio(balance_sheet):
     assert current_ratio(balance_sheet) == pytest.approx(500.0 / 250.0)
 
@@ -57,16 +65,15 @@ def test_period_selects_prior_column(financials, balance_sheet):
     assert gross_margin(financials, period=1) == pytest.approx(350.0 / 850.0)
 
 
-def test_piotroski_all_favorable(financials, balance_sheet, cashflow):
+def test_piotroski_mixed_fixture_deterministic(financials, balance_sheet, cashflow):
     result = piotroski_score(financials, balance_sheet, cashflow)
     # Fixtures give: positive NI, positive OCF, ROA up, OCF > NI,
     # debt ratio down, current ratio up, asset turnover up (strictly,
     # thanks to the 850.0 2024 revenue fixture value).
-    # Gross margin (350/850 vs 400/1000) and dilution (no shares row)
-    # are the two checks that don't land in "favorable" territory, so
-    # available == 8 (dilution unavailable) and score == 7.
-    assert result.score >= 7
-    assert result.available <= 9
+    # With the fixture's 2024 revenue of 850, the gross-margin check is
+    # genuinely False and the dilution check is unavailable.
+    assert result.score == 7
+    assert result.available == 8
     assert "no_dilution" not in result.checks
 
 
