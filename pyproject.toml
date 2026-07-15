@@ -1,0 +1,43 @@
+[project]
+name = "stock-analyzer"
+version = "0.1.0"
+description = "Multi-factor stock analysis: fundamentals, technicals, valuation, and a composite score with honest missing-data handling"
+readme = "README.md"
+license = { text = "MIT" }
+authors = [{ name = "berkaykoklu", email = "kokluberkay@gmail.com" }]
+requires-python = ">=3.11"
+dependencies = [
+    "yfinance>=0.2",
+    "pandas>=2.0",
+    "numpy>=1.26",
+    "ta>=0.11",
+    "streamlit>=1.35",
+    "plotly>=5.20",
+]
+
+[dependency-groups]
+dev = ["pytest>=8", "ruff>=0.4", "mypy>=1.10", "pandas-stubs>=2.0"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.ruff]
+line-length = 100
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+files = ["src"]
+
+[[tool.mypy.overrides]]
+module = ["yfinance.*", "ta.*", "plotly.*", "streamlit.*"]
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
