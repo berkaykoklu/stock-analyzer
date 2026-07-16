@@ -2,6 +2,7 @@ import math
 
 import pandas as pd
 
+from stock_analyzer.analysis.macro import context
 from stock_analyzer.analysis.quality import moat_score
 from stock_analyzer.analysis.risk import metrics
 from stock_analyzer.analysis.valuation import estimate
@@ -46,3 +47,17 @@ def test_risk_metrics_on_deterministic_history(history):
     assert result.max_drawdown <= 0
     assert result.sharpe is not None
     assert result.beta is None
+
+
+def test_macro_context_classifies_sector():
+    tech = context({"sector": "Technology"})
+    assert tech.sector == "Technology"
+    assert tech.cyclical is True
+    assert "sensitiv" in tech.notes.lower()
+
+    defensive = context({"sector": "Healthcare"})
+    assert defensive.cyclical is False
+
+    unknown = context({})
+    assert unknown.sector == ""
+    assert unknown.cyclical is False
