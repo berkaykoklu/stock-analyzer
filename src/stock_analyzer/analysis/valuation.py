@@ -49,6 +49,8 @@ def _current_price(info: dict[str, object]) -> float | None:
     return _as_float(info.get("currentPrice")) or _as_float(info.get("regularMarketPrice"))
 
 
+# Deviation from legacy: legacy's .loc.get bug meant the default rate was ALWAYS used;
+# this computes the real effective rate when Pretax Income / Tax Provision exist.
 def _tax_rate(financials: pd.DataFrame) -> float:
     pretax_income = _line(financials, "Pretax Income")
     if pretax_income is None or pretax_income <= 0:
@@ -68,7 +70,9 @@ def _wacc(info: dict[str, object], financials: pd.DataFrame) -> tuple[float | No
     if total_value == 0:
         return None, total_debt
 
-    beta = _as_float(info.get("beta")) or DEFAULT_BETA
+    beta = _as_float(info.get("beta"))
+    if beta is None:
+        beta = DEFAULT_BETA
     cost_of_equity = DEFAULT_RISK_FREE_RATE + beta * EQUITY_RISK_PREMIUM
 
     interest_expense = abs(_line(financials, "Interest Expense") or 0.0)

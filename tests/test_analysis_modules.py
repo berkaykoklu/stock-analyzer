@@ -61,3 +61,44 @@ def test_macro_context_classifies_sector():
     unknown = context({})
     assert unknown.sector == ""
     assert unknown.cyclical is False
+
+
+def test_estimate_beta_zero_affects_wacc():
+    """Regression: beta=0.0 should produce different WACC/fair_value than beta absent,
+    not be replaced by DEFAULT_BETA."""
+    # Minimal DCF-eligible info dict
+    base_info = {
+        "marketCap": 1_000_000_000.0,
+        "totalDebt": 100_000_000.0,
+        "freeCashflow": 50_000_000.0,
+        "sharesOutstanding": 100_000_000.0,
+        "currentPrice": 10.0,
+        "trailingEps": 1.0,
+        "trailingPE": 10.0,
+    }
+
+    # Minimal financials with revenue growth and tax data for DCF
+    financials_data = {
+        "Total Revenue": [1_000.0, 950.0],
+        "Pretax Income": [100.0, 95.0],
+        "Tax Provision": [21.0, 19.95],
+        "Interest Expense": [5.0, 4.75],
+    }
+    financials = pd.DataFrame(financials_data)
+
+    # Test with beta=0.0 (explicit zero)
+    info_with_beta_zero = {**base_info, "beta": 0.0}
+    result_beta_zero = estimate(info_with_beta_zero, financials)
+
+    # Test with beta absent (should fall back to DEFAULT_BETA=1.0)
+    result_no_beta = estimate(base_info, financials)
+
+    # Both should use DCF (have enough data)
+    assert result_beta_zero.method == "multistage_dcf"
+    assert result_no_beta.method == "multistage_dcf"
+
+    # With beta=0.0, cost_of_equity is lower, so WACC is lower, so fair_value is higher
+    # (lower discount rate means higher PV). They should differ.
+    assert result_beta_zero.fair_value is not None
+    assert result_no_beta.fair_value is not None
+    assert result_beta_zero.fair_value != result_no_beta.fair_value

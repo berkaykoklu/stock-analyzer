@@ -33,6 +33,8 @@ def _as_float(value: object) -> float | None:
     return None
 
 
+# Deviation from legacy: legacy's .loc.get bug meant the default rate was ALWAYS used;
+# this computes the real effective rate when Pretax Income / Tax Provision exist.
 def _tax_rate(financials: pd.DataFrame) -> float:
     pretax_income = _line(financials, "Pretax Income")
     if pretax_income is None or pretax_income <= 0:
