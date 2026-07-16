@@ -39,10 +39,11 @@ flowchart LR
 
 ## Roadmap
 
-Deferred from the legacy version this was ported from, not yet implemented:
+The staged plan lives in [docs/ROADMAP.md](docs/ROADMAP.md). Near-term milestones:
 
-- ML-based price-movement predictor
-- FinBERT-based news sentiment (the `sentiment` weight in the composite score is currently always unavailable)
+- ML direction signal with a walk-forward backtest record displayed beside every prediction
+- AI-written research notes grounded exclusively in the computed `AnalysisReport` (number-faithfulness enforced by evals)
+- News sentiment (the `sentiment` weight in the composite score is currently always unavailable)
 
 ## Disclaimer
 
