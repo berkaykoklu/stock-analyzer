@@ -11,10 +11,14 @@ from dataclasses import dataclass
 import pandas as pd
 
 from stock_analyzer._util import as_float
+from stock_analyzer._util import line as _line
 
 EQUITY_RISK_PREMIUM = 0.055
 LONG_TERM_GROWTH = 0.025
 DEFAULT_RISK_FREE_RATE = 0.04
+# Legacy-faithful: kept distinct from quality.py's DEFAULT_TAX_RATE (0.25) —
+# the two ports never reconciled their fallback rates, and this preserves
+# each module's original legacy behavior rather than picking one arbitrarily.
 DEFAULT_TAX_RATE = 0.21
 DEFAULT_BETA = 1.0
 DEFAULT_COST_OF_DEBT = 0.05
@@ -29,14 +33,6 @@ class ValuationResult:
     fair_value: float | None
     upside_pct: float | None
     method: str
-
-
-def _line(df: pd.DataFrame, item: str, period: int = 0) -> float | None:
-    try:
-        value = df.loc[item].iloc[period]
-    except (KeyError, IndexError):
-        return None
-    return None if pd.isna(value) else float(value)
 
 
 def _current_price(info: dict[str, object]) -> float | None:

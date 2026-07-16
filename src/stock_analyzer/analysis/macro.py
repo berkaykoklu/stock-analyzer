@@ -1,11 +1,17 @@
 """Sector/macro context: interest-rate sensitivity classification and a
 cyclical-vs-defensive flag.
 
-The rate-sensitivity map and interpretation thresholds are ported unchanged
-from legacy `macro.py`. `cyclical` has no legacy analog (legacy only
-classified interest-rate sensitivity, a different axis than business-cycle
-sensitivity); it is a new, disclosed addition using a standard cyclical
-sector set, since the target `MacroResult` requires it.
+The rate-sensitivity values and interpretation thresholds are ported
+unchanged from legacy `macro.py`, but the map's keys are modernized: legacy
+used "Financial" and "Consumer", which never match real yfinance `sector`
+values ("Financial Services", "Consumer Cyclical", "Consumer Defensive").
+Keys are updated to match actual sector strings while preserving the
+original sensitivity values (both Consumer variants inherit the legacy
+"Consumer" value) — the same disclosed-key-modernization treatment
+`CYCLICAL_SECTORS` already received. `cyclical` has no legacy analog
+(legacy only classified interest-rate sensitivity, a different axis than
+business-cycle sensitivity); it is a new, disclosed addition using a
+standard cyclical sector set, since the target `MacroResult` requires it.
 """
 
 from dataclasses import dataclass
@@ -14,16 +20,16 @@ RATE_SENSITIVITY: dict[str, float] = {
     "Technology": -0.5,  # Growth stocks sensitive to rates
     "Real Estate": -1.2,  # REITs very sensitive
     "Utilities": -0.8,  # Dividend stocks sensitive
-    "Financial": 0.6,  # Banks benefit from higher rates
+    "Financial Services": 0.6,  # Banks benefit from higher rates
     "Energy": -0.2,  # Less sensitive
     "Healthcare": -0.3,  # Defensive sector
-    "Consumer": -0.4,  # Mixed sensitivity
+    "Consumer Cyclical": -0.4,  # Mixed sensitivity
+    "Consumer Defensive": -0.4,  # Mixed sensitivity
 }
 DEFAULT_RATE_SENSITIVITY = -0.3
 
 CYCLICAL_SECTORS = {
     "Technology",
-    "Financial",
     "Financial Services",
     "Consumer Cyclical",
     "Industrials",

@@ -4,6 +4,8 @@ DataFrames use standard OHLCV orientation: row index = trading days
 (oldest first), columns = Open, High, Low, Close, Volume.
 """
 
+import math
+
 import pandas as pd
 import ta
 
@@ -30,6 +32,8 @@ def compute_indicators(history: pd.DataFrame) -> pd.DataFrame:
 
 
 def interpret_rsi(rsi: float) -> str:
+    if math.isnan(rsi):
+        return "N/A"
     if rsi >= 70:
         return "Overbought"
     elif rsi <= 30:

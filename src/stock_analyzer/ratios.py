@@ -8,20 +8,14 @@ from dataclasses import dataclass
 
 import pandas as pd
 
+from stock_analyzer._util import line as _line
+
 
 @dataclass
 class PiotroskiResult:
     score: int
     checks: dict[str, bool]
     available: int
-
-
-def _line(df: pd.DataFrame, item: str, period: int) -> float | None:
-    try:
-        value = df.loc[item].iloc[period]
-    except (KeyError, IndexError):
-        return None
-    return None if pd.isna(value) else float(value)
 
 
 def roa(financials: pd.DataFrame, balance_sheet: pd.DataFrame, period: int = 0) -> float | None:

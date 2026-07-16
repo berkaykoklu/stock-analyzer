@@ -9,7 +9,11 @@ from dataclasses import dataclass
 import pandas as pd
 
 from stock_analyzer._util import as_float
+from stock_analyzer._util import line as _line
 
+# Legacy-faithful: kept distinct from valuation.py's DEFAULT_TAX_RATE (0.21) —
+# the two ports never reconciled their fallback rates, and this preserves
+# each module's original legacy behavior rather than picking one arbitrarily.
 DEFAULT_TAX_RATE = 0.25
 
 
@@ -17,14 +21,6 @@ DEFAULT_TAX_RATE = 0.25
 class QualityResult:
     moat_score: float
     factors: dict[str, float]
-
-
-def _line(df: pd.DataFrame, item: str, period: int = 0) -> float | None:
-    try:
-        value = df.loc[item].iloc[period]
-    except (KeyError, IndexError):
-        return None
-    return None if pd.isna(value) else float(value)
 
 
 # Deviation from legacy: legacy's .loc.get bug meant the default rate was ALWAYS used;
@@ -39,7 +35,11 @@ def _tax_rate(financials: pd.DataFrame) -> float:
 
 def _roic(financials: pd.DataFrame, balance_sheet: pd.DataFrame) -> float | None:
     operating_income = _line(financials, "Operating Income")
-    total_equity = _line(balance_sheet, "Total Stockholder Equity")
+    # Modern yfinance emits "Stockholders Equity"; "Total Stockholder Equity"
+    # is the older row name, kept as a fallback for historical data.
+    total_equity = _line(balance_sheet, "Stockholders Equity")
+    if total_equity is None:
+        total_equity = _line(balance_sheet, "Total Stockholder Equity")
     if operating_income is None or total_equity is None:
         return None
 
