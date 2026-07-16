@@ -47,7 +47,6 @@ _RAW_DEFAULT_TICKERS = [
     "XOM",
     # Mid Cap Growth
     "ROKU",
-    "SQ",
     "TWLO",
     "ZM",
     "DDOG",
@@ -99,7 +98,6 @@ _RAW_DEFAULT_TICKERS = [
     "FCX",
     "NEM",
     "AA",
-    "X",
 ]
 DEFAULT_TICKERS = list(dict.fromkeys(_RAW_DEFAULT_TICKERS))
 
@@ -154,7 +152,7 @@ def _render_candlestick(ticker: str) -> None:
         margin={"l": 0, "r": 0, "t": 30, "b": 0},
         legend={"orientation": "h"},
     )
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width="stretch")
 
 
 def _render_fundamentals(report: AnalysisReport) -> None:
@@ -169,8 +167,8 @@ def _render_fundamentals(report: AnalysisReport) -> None:
         checks_df = pd.DataFrame(
             [{"Check": k.replace("_", " ").title(), "Passed": v} for k, v in f.checks.items()]
         )
-        st.dataframe(checks_df, use_container_width=True, hide_index=True)
-    st.dataframe(_labeled_table(report.ratios), use_container_width=True, hide_index=True)
+        st.dataframe(checks_df, width="stretch", hide_index=True)
+    st.dataframe(_labeled_table(report.ratios), width="stretch", hide_index=True)
 
 
 def _render_technicals(report: AnalysisReport) -> None:
@@ -208,7 +206,7 @@ def _render_quality(report: AnalysisReport) -> None:
     q = report.quality
     st.metric("Moat Score", f"{q.moat_score:.1f}/10")
     if q.factors:
-        st.dataframe(_labeled_table(q.factors), use_container_width=True, hide_index=True)
+        st.dataframe(_labeled_table(q.factors), width="stretch", hide_index=True)
     else:
         st.caption("No quality factors available for this ticker.")
 
@@ -309,7 +307,7 @@ def render_screener_tab() -> None:
                 .sort_values("Composite Score", ascending=False)
                 .reset_index(drop=True)
             )
-            st.dataframe(results_df, use_container_width=True)
+            st.dataframe(results_df, width="stretch")
 
         if errors:
             st.warning(f"{len(errors)} ticker(s) failed:")

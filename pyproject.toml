@@ -11,7 +11,7 @@ dependencies = [
     "pandas>=2.0",
     "numpy>=1.26",
     "ta>=0.11",
-    "streamlit>=1.35",
+    "streamlit>=1.59",  # width= sizing parameter (replaces use_container_width)
     "plotly>=5.20",
 ]
 
