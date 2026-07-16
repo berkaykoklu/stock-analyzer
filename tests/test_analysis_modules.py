@@ -3,6 +3,7 @@ import math
 import pandas as pd
 
 from stock_analyzer.analysis.quality import moat_score
+from stock_analyzer.analysis.risk import metrics
 from stock_analyzer.analysis.valuation import estimate
 
 
@@ -36,3 +37,12 @@ def test_moat_score_uses_available_factors(financials, balance_sheet):
     assert "roic" not in result.factors
     assert result.moat_score == 5.0  # +2 roe, +1 gross_margin, +2 revenue_growth
     assert 0.0 <= result.moat_score <= 10.0
+
+
+def test_risk_metrics_on_deterministic_history(history):
+    result = metrics(history)
+
+    assert result.volatility > 0
+    assert result.max_drawdown <= 0
+    assert result.sharpe is not None
+    assert result.beta is None
