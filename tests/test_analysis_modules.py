@@ -2,6 +2,7 @@ import math
 
 import pandas as pd
 
+from stock_analyzer.analysis.quality import moat_score
 from stock_analyzer.analysis.valuation import estimate
 
 
@@ -21,3 +22,17 @@ def test_estimate_insufficient_data_returns_none_fields():
     assert result.fair_value is None
     assert result.upside_pct is None
     assert result.method == "insufficient_data"
+
+
+def test_moat_score_uses_available_factors(financials, balance_sheet):
+    # fixture financials/balance_sheet have no Operating Income or Total
+    # Stockholder Equity, so ROIC is not computable -> excluded from factors.
+    info: dict[str, object] = {"returnOnEquity": 0.22}
+    result = moat_score(info, financials, balance_sheet)
+
+    assert result.factors["roe"] == 0.22
+    assert result.factors["gross_margin"] == 0.4  # 400 / 1000
+    assert math.isclose(result.factors["revenue_growth"], (1000 - 850) / 850)
+    assert "roic" not in result.factors
+    assert result.moat_score == 5.0  # +2 roe, +1 gross_margin, +2 revenue_growth
+    assert 0.0 <= result.moat_score <= 10.0
