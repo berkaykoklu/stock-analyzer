@@ -5,6 +5,7 @@ analysis is computed in this file. The one exception is the candlestick chart,
 which pulls raw OHLCV via `YFinanceData` directly since that's data, not analysis.
 """
 
+import math
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 import pandas as pd
@@ -176,7 +177,9 @@ def _render_technicals(report: AnalysisReport) -> None:
     st.subheader("Technicals")
     t = report.technicals
     col1, col2, col3 = st.columns(3)
-    col1.metric("RSI", f"{t['rsi']:.1f}", report.rsi_label)
+    rsi_value = "N/A" if math.isnan(t["rsi"]) else f"{t['rsi']:.1f}"
+    rsi_label = None if math.isnan(t["rsi"]) else report.rsi_label
+    col1.metric("RSI", rsi_value, rsi_label)
     col2.metric("SMA 50", format_large_number(t["sma_50"]))
     col3.metric("SMA 200", format_large_number(t["sma_200"]))
 

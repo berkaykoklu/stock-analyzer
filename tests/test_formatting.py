@@ -8,6 +8,9 @@ from stock_analyzer.formatting import format_large_number
     [
         (None, "N/A"),
         ("not-a-number", "N/A"),
+        (float("nan"), "N/A"),
+        (float("inf"), "N/A"),
+        (float("-inf"), "N/A"),
         (2_500_000_000_000, "$2.50T"),
         (3_400_000_000, "$3.40B"),
         (-3_400_000_000, "-$3.40B"),
