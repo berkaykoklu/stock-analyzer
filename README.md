@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/berkaykoklu/stock-analyzer/actions/workflows/ci.yml/badge.svg)](https://github.com/berkaykoklu/stock-analyzer/actions/workflows/ci.yml)
 
-A multi-factor stock analysis tool: fundamentals (Piotroski F-score), technicals (RSI, MACD, SMA trend), valuation, quality/moat, risk, and macro context, rolled up into a single composite score. When a data source is missing — a ticker with no cash flow statement, insufficient price history for a 200-day SMA — the composite score renormalizes its weights over whatever *is* available and reports the resulting coverage, rather than quietly filling the gap with a neutral 50.
+A multi-factor stock analysis tool combining fundamentals (Piotroski F-score), technicals (RSI, MACD, SMA trend), valuation, quality/moat, risk, and sentiment into a single composite score, with macro context displayed as separate analytical context. When a data source is missing — a ticker with no cash flow statement, insufficient price history for a 200-day SMA — the composite score renormalizes its weights over whatever *is* available and reports the resulting coverage, rather than quietly filling the gap with a neutral 50.
 
 ![Screenshot of the Streamlit app analyzing AAPL, showing a composite score of 65/100 at 95% data coverage](docs/screenshot.png)
 
@@ -27,7 +27,7 @@ flowchart LR
     analyzer --> app["app.py<br/>(Streamlit UI)"]
 ```
 
-`data.py` fetches everything behind a `MarketData` Protocol. `ratios`, `technicals`, and `analysis/*` are pure functions over that data. `scoring.py` combines their outputs into a composite score. `analyzer.py` wires all of it into a single frozen `AnalysisReport`. `app.py` renders that report — it computes nothing itself.
+`data.py` fetches everything behind a `MarketData` Protocol. `ratios`, `technicals`, and `analysis/*` are pure functions over that data. `scoring.py` combines their outputs into a composite score. `analyzer.py` wires all of it into a single frozen `AnalysisReport`. `app.py` renders that report — it computes nothing itself, except the candlestick chart, which pulls raw OHLCV data and computes SMA overlays via `compute_indicators`.
 
 ## Design notes
 
