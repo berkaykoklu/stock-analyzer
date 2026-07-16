@@ -4,7 +4,7 @@
 
 A multi-factor stock analysis tool combining fundamentals (Piotroski F-score), technicals (RSI, MACD, SMA trend), valuation, quality/moat, risk, and sentiment into a single composite score, with macro context displayed as separate analytical context. When a data source is missing — a ticker with no cash flow statement, insufficient price history for a 200-day SMA — the composite score renormalizes its weights over whatever *is* available and reports the resulting coverage, rather than quietly filling the gap with a neutral 50.
 
-![Screenshot of the Streamlit app analyzing AAPL, showing a composite score of 65/100 at 95% data coverage](docs/screenshot.png)
+![Screenshot of the Streamlit app analyzing AAPL, showing a composite score of 70/100 at 95% data coverage](docs/screenshot.png)
 
 ## Quickstart
 
