@@ -1,3 +1,6 @@
+from dataclasses import dataclass
+
+import numpy as np
 import pandas as pd
 import pytest
 
@@ -28,3 +31,30 @@ def cashflow() -> pd.DataFrame:
         {"2025": [150.0], "2024": [110.0]},
         index=["Operating Cash Flow"],
     )
+
+
+@pytest.fixture
+def history() -> pd.DataFrame:
+    # 250 days of a gentle uptrend with noise, deterministic.
+    rng = np.random.default_rng(42)
+    close = 100 + np.cumsum(rng.normal(0.1, 1.0, 250))
+    return pd.DataFrame(
+        {
+            "Open": close - 0.5,
+            "High": close + 1.0,
+            "Low": close - 1.0,
+            "Close": close,
+            "Volume": rng.integers(1_000_000, 2_000_000, 250).astype(float),
+        }
+    )
+
+
+@dataclass
+class FakeMarketData:
+    """MarketData Protocol implementation for tests: all fields passed in directly."""
+
+    info: dict[str, object]
+    history: pd.DataFrame
+    financials: pd.DataFrame
+    balance_sheet: pd.DataFrame
+    cashflow: pd.DataFrame
