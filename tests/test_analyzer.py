@@ -65,8 +65,10 @@ def test_analyze_full_fixture_report(financials, balance_sheet, cashflow, histor
     assert report.valuation.fair_value is not None
     assert report.valuation.upside_pct is not None
 
-    # Quality: ROE + gross margin + revenue growth factors are computable.
-    assert report.quality.moat_score == pytest.approx(5.0)
+    # Quality: ROIC + ROE + gross margin + revenue growth factors are
+    # computable (fixture's Operating Income/Stockholders Equity make ROIC
+    # hand-checkable at exactly 0.20 — see tests/conftest.py comment).
+    assert report.quality.moat_score == pytest.approx(8.0)
     assert report.quality.factors
 
     # Risk: deterministic uptrend fixture always yields a Sharpe ratio.

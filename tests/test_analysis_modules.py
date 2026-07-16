@@ -27,16 +27,19 @@ def test_estimate_insufficient_data_returns_none_fields():
 
 
 def test_moat_score_uses_available_factors(financials, balance_sheet):
-    # fixture financials/balance_sheet have no Operating Income or Total
-    # Stockholder Equity, so ROIC is not computable -> excluded from factors.
+    # fixture financials has Operating Income (320.0) and balance_sheet has
+    # Stockholders Equity (900.0) + Total Debt (300.0), so ROIC is
+    # computable: nopat = 320 * (1 - 0.25) = 240; invested_capital =
+    # 900 + 300 = 1200; roic = 240 / 1200 = 0.20 exactly.
     info: dict[str, object] = {"returnOnEquity": 0.22}
     result = moat_score(info, financials, balance_sheet)
 
+    assert math.isclose(result.factors["roic"], 0.20)
     assert result.factors["roe"] == 0.22
     assert result.factors["gross_margin"] == 0.4  # 400 / 1000
     assert math.isclose(result.factors["revenue_growth"], (1000 - 850) / 850)
-    assert "roic" not in result.factors
-    assert result.moat_score == 5.0  # +2 roe, +1 gross_margin, +2 revenue_growth
+    # +3 roic (0.20 > 0.15), +2 roe, +1 gross_margin, +2 revenue_growth
+    assert result.moat_score == 8.0
     assert 0.0 <= result.moat_score <= 10.0
 
 
@@ -63,6 +66,23 @@ def test_macro_context_classifies_sector():
     assert unknown.cyclical is False
 
 
+def test_macro_context_matches_real_yfinance_sector_name():
+    # Real yfinance `info["sector"]` values use "Financial Services", not
+    # the legacy "Financial" key — regression guard for the key modernization.
+    financials = context({"sector": "Financial Services"})
+    assert financials.cyclical is True
+    assert "+0.6" in financials.notes
+    assert "benefits from rate increases" in financials.notes.lower()
+
+    consumer_cyclical = context({"sector": "Consumer Cyclical"})
+    assert consumer_cyclical.cyclical is True
+    assert "-0.4" in consumer_cyclical.notes
+
+    consumer_defensive = context({"sector": "Consumer Defensive"})
+    assert consumer_defensive.cyclical is False
+    assert "-0.4" in consumer_defensive.notes
+
+
 def test_estimate_beta_zero_affects_wacc():
     """Regression: beta=0.0 should produce different WACC/fair_value than beta absent,
     not be replaced by DEFAULT_BETA."""
@@ -77,14 +97,13 @@ def test_estimate_beta_zero_affects_wacc():
         "trailingPE": 10.0,
     }
 
-    # Minimal financials with revenue growth and tax data for DCF
-    financials_data = {
-        "Total Revenue": [1_000.0, 950.0],
-        "Pretax Income": [100.0, 95.0],
-        "Tax Provision": [21.0, 19.95],
-        "Interest Expense": [5.0, 4.75],
-    }
-    financials = pd.DataFrame(financials_data)
+    # Minimal financials with revenue growth and tax data for DCF.
+    # yfinance orientation: row index = line items, columns = periods
+    # (newest first), matching every other fixture in this suite.
+    financials = pd.DataFrame(
+        {"2025": [1_000.0, 100.0, 21.0, 5.0], "2024": [950.0, 95.0, 19.95, 4.75]},
+        index=["Total Revenue", "Pretax Income", "Tax Provision", "Interest Expense"],
+    )
 
     # Test with beta=0.0 (explicit zero)
     info_with_beta_zero = {**base_info, "beta": 0.0}

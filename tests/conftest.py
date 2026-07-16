@@ -11,17 +11,32 @@ def financials() -> pd.DataFrame:
     # 2024 Total Revenue is 850.0 (not 900.0) so that asset-turnover
     # improvement (period 0 vs period 1) is a strict inequality rather
     # than 1000/2000 == 900/1800.
+    # Operating Income (2025: 320.0) pairs with balance_sheet's
+    # Stockholders Equity (2025: 900.0) and Total Debt (2025: 300.0) to make
+    # ROIC hand-checkable: nopat = 320 * (1 - 0.25) = 240;
+    # invested_capital = 900 + 300 = 1200; roic = 240 / 1200 = 0.20 exactly.
     return pd.DataFrame(
-        {"2025": [100.0, 400.0, 1000.0], "2024": [80.0, 350.0, 850.0]},
-        index=["Net Income", "Gross Profit", "Total Revenue"],
+        {"2025": [100.0, 400.0, 1000.0, 320.0], "2024": [80.0, 350.0, 850.0, 280.0]},
+        index=["Net Income", "Gross Profit", "Total Revenue", "Operating Income"],
     )
 
 
 @pytest.fixture
 def balance_sheet() -> pd.DataFrame:
+    # Stockholders Equity (2025: 900.0) makes ROIC computable/hand-checkable
+    # together with the financials fixture's Operating Income — see comment there.
     return pd.DataFrame(
-        {"2025": [2000.0, 300.0, 500.0, 250.0], "2024": [1800.0, 320.0, 450.0, 300.0]},
-        index=["Total Assets", "Total Debt", "Current Assets", "Current Liabilities"],
+        {
+            "2025": [2000.0, 300.0, 500.0, 250.0, 900.0],
+            "2024": [1800.0, 320.0, 450.0, 300.0, 850.0],
+        },
+        index=[
+            "Total Assets",
+            "Total Debt",
+            "Current Assets",
+            "Current Liabilities",
+            "Stockholders Equity",
+        ],
     )
 
 

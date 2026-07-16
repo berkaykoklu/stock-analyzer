@@ -41,6 +41,7 @@ def test_compute_indicators_adds_columns(history):
         (50.0, "Neutral"),
         (65.0, "Bullish"),
         (35.0, "Bearish"),
+        (float("nan"), "N/A"),
     ],
 )
 def test_interpret_rsi(rsi, label):
