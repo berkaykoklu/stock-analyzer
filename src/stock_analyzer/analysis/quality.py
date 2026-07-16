@@ -8,6 +8,8 @@ from dataclasses import dataclass
 
 import pandas as pd
 
+from stock_analyzer._util import as_float
+
 DEFAULT_TAX_RATE = 0.25
 
 
@@ -23,14 +25,6 @@ def _line(df: pd.DataFrame, item: str, period: int = 0) -> float | None:
     except (KeyError, IndexError):
         return None
     return None if pd.isna(value) else float(value)
-
-
-def _as_float(value: object) -> float | None:
-    if value is None or isinstance(value, bool):
-        return None
-    if isinstance(value, int | float):
-        return float(value)
-    return None
 
 
 # Deviation from legacy: legacy's .loc.get bug meant the default rate was ALWAYS used;
@@ -85,7 +79,7 @@ def moat_score(
 ) -> QualityResult:
     """Competitive-moat score (0-10): ROIC, ROE, gross margin, revenue growth brackets."""
     roic = _roic(financials, balance_sheet)
-    roe = _as_float(info.get("returnOnEquity"))
+    roe = as_float(info.get("returnOnEquity"))
     gross_margin = _gross_margin(financials)
     revenue_growth = _revenue_growth(financials)
 

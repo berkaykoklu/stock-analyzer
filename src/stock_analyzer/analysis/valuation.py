@@ -10,6 +10,8 @@ from dataclasses import dataclass
 
 import pandas as pd
 
+from stock_analyzer._util import as_float
+
 EQUITY_RISK_PREMIUM = 0.055
 LONG_TERM_GROWTH = 0.025
 DEFAULT_RISK_FREE_RATE = 0.04
@@ -37,16 +39,8 @@ def _line(df: pd.DataFrame, item: str, period: int = 0) -> float | None:
     return None if pd.isna(value) else float(value)
 
 
-def _as_float(value: object) -> float | None:
-    if value is None or isinstance(value, bool):
-        return None
-    if isinstance(value, int | float):
-        return float(value)
-    return None
-
-
 def _current_price(info: dict[str, object]) -> float | None:
-    return _as_float(info.get("currentPrice")) or _as_float(info.get("regularMarketPrice"))
+    return as_float(info.get("currentPrice")) or as_float(info.get("regularMarketPrice"))
 
 
 # Deviation from legacy: legacy's .loc.get bug meant the default rate was ALWAYS used;
@@ -61,16 +55,16 @@ def _tax_rate(financials: pd.DataFrame) -> float:
 
 def _wacc(info: dict[str, object], financials: pd.DataFrame) -> tuple[float | None, float]:
     """Returns (wacc, total_debt); wacc is None if it can't be computed."""
-    market_cap = _as_float(info.get("marketCap"))
+    market_cap = as_float(info.get("marketCap"))
     if not market_cap:
         return None, 0.0
 
-    total_debt = _as_float(info.get("totalDebt")) or 0.0
+    total_debt = as_float(info.get("totalDebt")) or 0.0
     total_value = market_cap + total_debt
     if total_value == 0:
         return None, total_debt
 
-    beta = _as_float(info.get("beta"))
+    beta = as_float(info.get("beta"))
     if beta is None:
         beta = DEFAULT_BETA
     cost_of_equity = DEFAULT_RISK_FREE_RATE + beta * EQUITY_RISK_PREMIUM
@@ -101,7 +95,7 @@ def _multistage_dcf(info: dict[str, object], financials: pd.DataFrame) -> Valuat
     if wacc is None or wacc <= LONG_TERM_GROWTH:
         return None
 
-    last_fcf = _as_float(info.get("freeCashflow"))
+    last_fcf = as_float(info.get("freeCashflow"))
     if last_fcf is None or last_fcf <= 0:
         return None
 
@@ -129,10 +123,10 @@ def _multistage_dcf(info: dict[str, object], financials: pd.DataFrame) -> Valuat
     pv_terminal = terminal_value / ((1 + wacc) ** PROJECTION_YEARS)
     enterprise_value = pv_fcf + pv_terminal
 
-    cash = _as_float(info.get("totalCash")) or 0.0
+    cash = as_float(info.get("totalCash")) or 0.0
     equity_value = enterprise_value + cash - total_debt
 
-    shares_outstanding = _as_float(info.get("sharesOutstanding"))
+    shares_outstanding = as_float(info.get("sharesOutstanding"))
     if not shares_outstanding:
         return None
 
@@ -146,8 +140,8 @@ def _multistage_dcf(info: dict[str, object], financials: pd.DataFrame) -> Valuat
 
 
 def _trailing_pe_fallback(info: dict[str, object]) -> ValuationResult:
-    eps = _as_float(info.get("trailingEps"))
-    pe = _as_float(info.get("trailingPE"))
+    eps = as_float(info.get("trailingEps"))
+    pe = as_float(info.get("trailingPE"))
     current_price = _current_price(info)
 
     if eps is None or pe is None or current_price is None or current_price == 0:
